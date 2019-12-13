@@ -35,6 +35,29 @@ const input = [
 ....#...##.##.##......#..#..##....`
 ];
 
+const input1 = [
+    `.#..##.###...#######
+##.############..##.
+.#.######.########.#
+.###.#######.####.#.
+#####.##.#.##.###.##
+..#####..#.#########
+####################
+#.####....###.#.#.##
+##.#################
+#####.##.###..####..
+..######..##.#######
+####.##.####...##..#
+.#####..#.######.###
+##...#.##########...
+#.##########.#######
+.####.#.###.###.#.##
+....##.##.###..#####
+.#.#.###########.###
+#.#.#.#####.####.###
+###.##.####.##.#..##`
+];
+
 const input2 = [
     `......#.#.
 #..#.#....
@@ -253,7 +276,7 @@ function shoot(rayArray) {
 
             if(i === rayArray.length) {
                 asteroidKillCount += 1;
-                if (asteroidKillCount === 200) console.log(rayArray[i].cross);
+                console.log(asteroidKillCount, ': ', rayArray[i].cross);
                 rayArray.splice(i, 1);
                 break;
             }
@@ -264,9 +287,8 @@ function shoot(rayArray) {
             }
 
             asteroidKillCount += 1;
-            if (asteroidKillCount === 200) console.log(rayArray[i].cross);
+            console.log(asteroidKillCount, ': ', rayArray[i].cross, i);
             rayArray.splice(i, 1);
-            i += 1;
         }
     }
 }
@@ -289,7 +311,9 @@ function run(field) {
         'max vision asteroid#',
         result.number,
         'sight:',
-        result.sight.length
+        result.sight.length,
+        result.x,
+        result.y
     );
     return asteroidArray;
 }
@@ -309,9 +333,8 @@ function run2() {
     }
 
     rayArray.sort(Ray.compare);
-    console.log(rayArray);
 
-    //shoot(rayArray);
+    shoot(rayArray);
 }
 
 run2();
