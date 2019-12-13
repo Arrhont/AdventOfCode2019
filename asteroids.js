@@ -59,7 +59,6 @@ let counter = counterMaker();
 let rayCounter = counterMaker();
 
 class Asteroid {
-
     constructor(x, y) {
         this.x = x;
         this.y = y;
@@ -69,9 +68,11 @@ class Asteroid {
 }
 
 class Ray {
-
     constructor(startingPoint, crossingPoint) {
-        if (startingPoint.x === crossingPoint.x && startingPoint.y === crossingPoint.y) {
+        if (
+            startingPoint.x === crossingPoint.x &&
+            startingPoint.y === crossingPoint.y
+        ) {
             throw new Error('Cant build ray through one point');
         }
 
@@ -83,46 +84,92 @@ class Ray {
         this.cross.y = crossingPoint.y;
         this.number = rayCounter();
 
-        this.length = Math.sqrt((startingPoint.x * startingPoint.x - crossingPoint.x * crossingPoint.x) +
-            (startingPoint.y * startingPoint.y - crossingPoint.y * crossingPoint.y));
-        
+        this.length = Math.sqrt(
+            (crossingPoint.x - startingPoint.x) *
+                (crossingPoint.x - startingPoint.x) +
+                (crossingPoint.y - startingPoint.y) *
+                    (crossingPoint.y - startingPoint.y)
+        );
+
         this.sin = (startingPoint.y - crossingPoint.y) / this.length;
-        this.tan = (crossingPoint.y - startingPoint.y) / (crossingPoint.x - startingPoint.x);
+        this.tan =
+            (crossingPoint.y - startingPoint.y) /
+            (crossingPoint.x - startingPoint.x);
 
         this.quadrant = this.quadrantDetermine(startingPoint, crossingPoint);
     }
 
     quadrantDetermine(startingPoint, crossingPoint) {
-
-        if (startingPoint.x <= crossingPoint.x && startingPoint.y >= crossingPoint.y) {
+        if (
+            startingPoint.x <= crossingPoint.x &&
+            startingPoint.y > crossingPoint.y
+        ) {
             return 1;
         }
 
-        if (startingPoint.x <= crossingPoint.x && startingPoint.y < crossingPoint.y) {
+        if (
+            startingPoint.x < crossingPoint.x &&
+            startingPoint.y <= crossingPoint.y
+        ) {
             return 2;
-     
         }
 
-        if (startingPoint.x > crossingPoint.x && startingPoint.y < crossingPoint.y) {
+        if (
+            startingPoint.x >= crossingPoint.x &&
+            startingPoint.y < crossingPoint.y
+        ) {
             return 3;
         }
 
-        if (startingPoint.x > crossingPoint.x && startingPoint.y > crossingPoint.y) {
+        if (
+            startingPoint.x > crossingPoint.x &&
+            startingPoint.y >= crossingPoint.y
+        ) {
             return 4;
         }
     }
-    
+
     isTheSameRay(ray) {
         const DELTA_X = this.cross.x - this.start.x;
         const DELTA_Y = this.cross.y - this.start.y;
 
-        const isOntheOneLine = (ray.cross.x - this.start.x) * DELTA_Y === (ray.cross.y - this.start.y) * DELTA_X;
+        const isOntheOneLine =
+            (ray.cross.x - this.start.x) * DELTA_Y ===
+            (ray.cross.y - this.start.y) * DELTA_X;
         if (isOntheOneLine && this.quadrant === ray.quadrant) {
             return true;
         }
 
         return false;
+    }
+
+    static compare(ray1, ray2) {
+        if (ray1.quadrant < ray2.quadrant) return -1;
+        if (ray1.quadrant > ray2.quadrant) return 1;
+
+        switch (ray1.quadrant) {
+            case 1:
+            case 2:
+                if (ray1.tan < ray2.tan) return -1;
+                if (ray1.tan > ray2.tan) return 1;
+                if (ray1.length > ray2.length) return -1;
+                if (ray1.length < ray2.length) return 1;
+                break;
+
+            case 3:
+            case 4:
+                if (ray1.tan > ray2.tan) return 1;
+                if (ray1.tan < ray2.tan) return -1;
+                if (ray1.length > ray2.length) return -1;
+                if (ray1.length < ray2.length) return 1;
+                break;
+
+            default:
+                throw new Error(
+                    `Error in quadrant detection of Ray#${ray1.number} or #${ray2.number}`
+                );
         }
+    }
 }
 
 function asteroidParse(asteroidField) {
@@ -196,6 +243,34 @@ function sightAdder(targetAsteroid, asteroidArray) {
     }
 }
 
+// TODO! Implement this
+function shoot(rayArray) {
+    let asteroidKillCount = 0;
+
+    while (rayArray.length > 0) {
+
+        for (let i = 0; i < rayArray.length; ) {
+
+            if(i === rayArray.length) {
+                asteroidKillCount += 1;
+                if (asteroidKillCount === 200) console.log(rayArray[i].cross);
+                rayArray.splice(i, 1);
+                break;
+            }
+
+            if(rayArray[i].isTheSameRay(rayArray[i + 1])) {
+                i += 1;
+                continue;
+            }
+
+            asteroidKillCount += 1;
+            if (asteroidKillCount === 200) console.log(rayArray[i].cross);
+            rayArray.splice(i, 1);
+            i += 1;
+        }
+    }
+}
+
 //LAUNCHDATA
 
 function run(field) {
@@ -210,28 +285,33 @@ function run(field) {
         acc.sight.length < asteroid.sight.length ? asteroid : acc
     );
 
-    console.log(result.sight.length);
+    console.log(
+        'max vision asteroid#',
+        result.number,
+        'sight:',
+        result.sight.length
+    );
     return asteroidArray;
 }
 
-const asteroidArray = run(input);
-let laser = asteroidArray[265];
+function run2() {
+    const asteroidArray = run(input);
+    let laser = asteroidArray[265];
 
-const rayArray = [];
-for (const asteroid of asteroidArray) {
-    try {
-        rayArray.push(new Ray(laser, asteroid));
+    const rayArray = [];
+
+    for (const asteroid of asteroidArray) {
+        try {
+            rayArray.push(new Ray(laser, asteroid));
+        } catch (err) {
+            continue;
+        }
     }
-    catch(err) {
-        continue;
-    }
+
+    rayArray.sort(Ray.compare);
+    console.log(rayArray);
+
+    //shoot(rayArray);
 }
 
-console.log(rayArray[0]);
-
-
-
-
-
-
-
+run2();
