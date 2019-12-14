@@ -680,7 +680,7 @@ const inputArray = [
 ];
 
 class Program extends Array {
-    modeSelect(instructionPointer, params) {
+    getOperands(instructionPointer, params) {
         const firstOperandIsInImmediateMode = params[2];
         const secondOperandIsInImmediateMode = params[1];
         const firstOperandIndex = this[instructionPointer + 1];
@@ -699,7 +699,7 @@ class Program extends Array {
     }
 
     opcode01(instructionPointer, params) {
-        const { firstOperand, secondOperand, target } = this.modeSelect(
+        const { firstOperand, secondOperand, target } = this.getOperands(
             instructionPointer,
             params
         );
@@ -710,7 +710,7 @@ class Program extends Array {
     }
 
     opcode02(instructionPointer, params) {
-        const { firstOperand, secondOperand, target } = this.modeSelect(
+        const { firstOperand, secondOperand, target } = this.getOperands(
             instructionPointer,
             params
         );
@@ -735,7 +735,7 @@ class Program extends Array {
     }
 
     opcode05(instructionPointer, params) {
-        const { firstOperand, secondOperand } = this.modeSelect(
+        const { firstOperand, secondOperand } = this.getOperands(
             instructionPointer,
             params
         );
@@ -750,7 +750,7 @@ class Program extends Array {
     }
 
     opcode06(instructionPointer, params) {
-        const { firstOperand, secondOperand } = this.modeSelect(
+        const { firstOperand, secondOperand } = this.getOperands(
             instructionPointer,
             params
         );
@@ -765,7 +765,7 @@ class Program extends Array {
     }
 
     opcode07(instructionPointer, params) {
-        const { firstOperand, secondOperand, target } = this.modeSelect(
+        const { firstOperand, secondOperand, target } = this.getOperands(
             instructionPointer,
             params
         );
@@ -780,7 +780,7 @@ class Program extends Array {
     }
 
     opcode08(instructionPointer, params) {
-        const { firstOperand, secondOperand, target } = this.modeSelect(
+        const { firstOperand, secondOperand, target } = this.getOperands(
             instructionPointer,
             params
         );
