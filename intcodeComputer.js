@@ -854,16 +854,28 @@ function intcodeComputer(program, input) {
                 instructionPointer = program.opcode04(instructionPointer);
                 break;
             case '05':
-                instructionPointer = program.opcode05(instructionPointer, params);
+                instructionPointer = program.opcode05(
+                    instructionPointer,
+                    params
+                );
                 break;
             case '06':
-                instructionPointer = program.opcode06(instructionPointer, params);
+                instructionPointer = program.opcode06(
+                    instructionPointer,
+                    params
+                );
                 break;
             case '07':
-                instructionPointer = program.opcode07(instructionPointer, params);
+                instructionPointer = program.opcode07(
+                    instructionPointer,
+                    params
+                );
                 break;
             case '08':
-                instructionPointer = program.opcode08(instructionPointer, params);
+                instructionPointer = program.opcode08(
+                    instructionPointer,
+                    params
+                );
                 break;
             case '99':
                 return program.opcode99(instructionPointer);
@@ -892,5 +904,3 @@ function inputFind(inputArray, findingValue) {
 const program = new Program(...inputArray);
 intcodeComputer(program, 5);
 
-const program1 = new Program(3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9);
-intcodeComputer(program1, 99);

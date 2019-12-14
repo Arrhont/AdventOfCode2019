@@ -266,7 +266,6 @@ function sightAdder(targetAsteroid, asteroidArray) {
     }
 }
 
-// TODO! Implement this
 function shoot(rayArray) {
     let asteroidKillCount = 0;
 
@@ -274,7 +273,7 @@ function shoot(rayArray) {
 
         for (let i = 0; i < rayArray.length; ) {
 
-            if(i === rayArray.length) {
+            if(i === rayArray.length - 1) {
                 asteroidKillCount += 1;
                 console.log(asteroidKillCount, ': ', rayArray[i].cross);
                 rayArray.splice(i, 1);
