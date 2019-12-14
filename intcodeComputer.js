@@ -680,7 +680,7 @@ const inputArray = [
 ];
 
 class Program extends Array {
-    opcode01(instructionPointer, params) {
+    modeSelect(instructionPointer, params) {
         const firstOperandIsInImmediateMode = params[2];
         const secondOperandIsInImmediateMode = params[1];
         const firstOperandIndex = this[instructionPointer + 1];
@@ -694,6 +694,15 @@ class Program extends Array {
         const secondOperand = secondOperandIsInImmediateMode
             ? secondOperandIndex
             : this[secondOperandIndex];
+
+        return { firstOperand, secondOperand, target };
+    }
+
+    opcode01(instructionPointer, params) {
+        const { firstOperand, secondOperand, target } = this.modeSelect(
+            instructionPointer,
+            params
+        );
 
         this[target] = firstOperand + secondOperand;
 
@@ -701,19 +710,10 @@ class Program extends Array {
     }
 
     opcode02(instructionPointer, params) {
-        const firstOperandIsInImmediateMode = params[2];
-        const secondOperandIsInImmediateMode = params[1];
-        const firstOperandIndex = this[instructionPointer + 1];
-        const secondOperandIndex = this[instructionPointer + 2];
-        const target = this[instructionPointer + 3];
-
-        const firstOperand = firstOperandIsInImmediateMode
-            ? firstOperandIndex
-            : this[firstOperandIndex];
-
-        const secondOperand = secondOperandIsInImmediateMode
-            ? secondOperandIndex
-            : this[secondOperandIndex];
+        const { firstOperand, secondOperand, target } = this.modeSelect(
+            instructionPointer,
+            params
+        );
 
         this[target] = firstOperand * secondOperand;
 
@@ -734,6 +734,66 @@ class Program extends Array {
         return instructionPointer + 2;
     }
 
+    opcode05(instructionPointer, params) {
+        const { firstOperand, secondOperand } = this.modeSelect(
+            instructionPointer,
+            params
+        );
+
+        const isNeedToJump = Boolean(firstOperand);
+        const target = secondOperand;
+        if (isNeedToJump) {
+            return target;
+        }
+
+        return instructionPointer + 3;
+    }
+
+    opcode06(instructionPointer, params) {
+        const { firstOperand, secondOperand } = this.modeSelect(
+            instructionPointer,
+            params
+        );
+
+        const isNeedToJump = !Boolean(firstOperand);
+        const target = secondOperand;
+        if (isNeedToJump) {
+            return target;
+        }
+
+        return instructionPointer + 3;
+    }
+
+    opcode07(instructionPointer, params) {
+        const { firstOperand, secondOperand, target } = this.modeSelect(
+            instructionPointer,
+            params
+        );
+
+        if (firstOperand < secondOperand) {
+            this[target] = 1;
+        } else {
+            this[target] = 0;
+        }
+
+        return instructionPointer + 4;
+    }
+
+    opcode08(instructionPointer, params) {
+        const { firstOperand, secondOperand, target } = this.modeSelect(
+            instructionPointer,
+            params
+        );
+
+        if (firstOperand === secondOperand) {
+            this[target] = 1;
+        } else {
+            this[target] = 0;
+        }
+
+        return instructionPointer + 4;
+    }
+
     opcode99(instructionPointer) {
         console.log(`Program stopped at ${instructionPointer}`);
 
@@ -743,7 +803,7 @@ class Program extends Array {
 
 function opcodeParse(paramOpcode) {
     const opcodeArray = [];
-    const opcodeString = String(paramOpcode)
+    const opcodeString = String(paramOpcode);
 
     for (const char of opcodeString) {
         const number = Number(char);
@@ -793,10 +853,22 @@ function intcodeComputer(program, input) {
             case '04':
                 instructionPointer = program.opcode04(instructionPointer);
                 break;
+            case '05':
+                instructionPointer = program.opcode05(instructionPointer, params);
+                break;
+            case '06':
+                instructionPointer = program.opcode06(instructionPointer, params);
+                break;
+            case '07':
+                instructionPointer = program.opcode07(instructionPointer, params);
+                break;
+            case '08':
+                instructionPointer = program.opcode08(instructionPointer, params);
+                break;
             case '99':
                 return program.opcode99(instructionPointer);
             default:
-                break;
+                throw new Error(`Unrecognized opcode ${opcode}`);
         }
     }
 
@@ -818,4 +890,7 @@ function inputFind(inputArray, findingValue) {
 }
 
 const program = new Program(...inputArray);
-intcodeComputer(program, 1);
+intcodeComputer(program, 5);
+
+const program1 = new Program(3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9);
+intcodeComputer(program1, 99);
