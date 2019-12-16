@@ -1,16 +1,3 @@
-const testInput = [
-    `D)I
-E)J
-J)K
-K)L
-B)C
-C)D
-D)E
-E)F
-B)G
-G)H
-COM)B`
-];
 const input = [
     `KDZ)KYY
 4K8)LQM
@@ -1256,7 +1243,8 @@ class Planet {
     }
 
     hasSatellite(planet) {
-        const result = this.satellite.find(satellite => satellite === planet);
+        const result = this.satellite.find(satellite => satellite.name === planet.name);
+
         return result;
     }
 
@@ -1266,14 +1254,6 @@ class Planet {
         this.satellite.push(planet);
         planet.rotatesAround = this;
         Planet.setDepth(planet, this.depth + 1);
-        return this;
-    }
-
-    addRotatesAround(planet) {
-        if (!this.rotatesAround) {
-            this.rotatesAround = planet;
-            Planet.setDepth(this, planet.depth + 1);
-        }
 
         return this;
     }
@@ -1283,26 +1263,24 @@ class Planet {
         planet.satellite.forEach(satellite => {
             Planet.setDepth(satellite, depth + 1);
         });
+
         return planet;
     }
 }
 
 class Galaxy {
     constructor(input) {
-        function inputParse(input) {
+        
+        function getOrbits(input) {
             const inputString = input[0];
             const orbitsArray = inputString.split('\n');
+
             return orbitsArray;
         }
 
         function getAllPlanetsNames(orbitsArray) {
-            const planetNames = new Set();
-
-            for (const orbit of orbitsArray) {
-                const { planetName, satelliteName } = orbitParse(orbit);
-                planetNames.add(planetName);
-                planetNames.add(satelliteName);
-            }
+            const planetNamesArray = orbitsArray.map(orbitParse).flat();
+            const planetNames = new Set(planetNamesArray);
 
             return planetNames;
         }
@@ -1318,25 +1296,22 @@ class Galaxy {
         }
 
         function orbitParse(orbit) {
-            const planets = orbit.split(')');
-            const planetName = planets[0];
-            const satelliteName = planets[1];
-            return { planetName, satelliteName };
+            return orbit.split(')');
         }
 
-        const orbitsCreate = () => {
-            for (const orbit of orbitsArray) {
-                const { planetName, satelliteName } = orbitParse(orbit);
+        const orbitsCreate = (orbits) => {
+            for (const orbit of orbits) {
+                const [ planetName, satelliteName ] = orbitParse(orbit);
                 const planet = this.planets.get(planetName);
                 const satellite = this.planets.get(satelliteName);
                 planet.addSatellite(satellite);
             }
         };
 
-        const orbitsArray = inputParse(input);
-        this.planetNames = getAllPlanetsNames(orbitsArray);
-        this.planets = planetsCreate(this.planetNames);
-        orbitsCreate();
+        const orbitsArray = getOrbits(input);
+        const planetNames = getAllPlanetsNames(orbitsArray);
+        this.planets = planetsCreate(planetNames);
+        orbitsCreate(orbitsArray);
     }
 
     orbitsCount() {
@@ -1353,17 +1328,17 @@ class Galaxy {
         return this.planets.get(name);
     }
 
-    getPathtoCOM(name) {
-        const path = [];
+    getPathToCom(name) {
         let planet = this.getPlanet(name);
+        const path = [planet];
 
         while (planet.depth > 0) {
-            path.push(planet);
             planet = planet.rotatesAround;
+            path.push(planet);
         }
 
-        path.push(planet);
         path.reverse();
+
         return path;
     }
 
@@ -1372,8 +1347,8 @@ class Galaxy {
             throw new Error('It is the same place!');
         }
 
-        const pathA = this.getPathtoCOM(planetA);
-        const pathB = this.getPathtoCOM(planetB);
+        const pathA = this.getPathToCom(planetA);
+        const pathB = this.getPathToCom(planetB);
         let intersectionIndex;
 
         for (let i = 0; i < pathA.length; i++) {
@@ -1382,20 +1357,21 @@ class Galaxy {
                 break;
             }
         }
+
         const pathAToIntersection = pathA.slice(intersectionIndex).reverse();
         const pathIntersectionToB = pathB.slice(intersectionIndex + 1);
-        const pathBetweenPlanets = pathAToIntersection.concat(
-            ...pathIntersectionToB
-        );
+        const pathBetweenPlanets = [...pathAToIntersection, ...pathIntersectionToB];
 
         return pathBetweenPlanets;
     }
 
-        getOrbitalTransfersCount(planetA, planetB) {
-            const pathBetweenPlanets = this.getPathBetweenPlanets(planetA, planetB);
-            return pathBetweenPlanets.length - 3;
-        }
+    getOrbitalTransfersCount(planetA, planetB) {
+        const pathBetweenPlanets = this.getPathBetweenPlanets(planetA, planetB);
+        return pathBetweenPlanets.length - 1;
+    }
 }
 
 const galaxy = new Galaxy(input);
-console.log(galaxy.getOrbitalTransfersCount('YOU', 'SAN'));
+const yourPlanet = galaxy.getPlanet('YOU').rotatesAround;
+const santaPlanet = galaxy.getPlanet('SAN').rotatesAround;
+console.log(galaxy.getOrbitalTransfersCount(yourPlanet.name, santaPlanet.name));
